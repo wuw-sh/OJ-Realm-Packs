@@ -33,25 +33,7 @@ const coordDisableActionbar = (pl: server.Player) => {
 const checkWrong = (pl: server.Player) => {
     const v = pl.getVelocity();
     const speed = Math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2);
-    const checkFootBlock = () => {
-        const pos = pl.location;
-        let x = Math.floor(pos.x), y = Math.floor(pos.y), z = Math.floor(pos.z);
-        const block = pl.dimension.getBlock(new server.Vector(x, y - 1, z));
-        if (!block)
-            return;
-        if (block.typeId == 'minecraft:water' || block.typeId == 'minecraft:lava')
-            return true;
-        return false;
-    };
-    const checkInBlock = () => {
-        const block = pl.dimension.getBlock(pl.location);
-        if (!block)
-            return;
-        if (block.typeId == 'minecraft:water' || block.typeId == 'minecraft:lava')
-            return true;
-        return false;
-    };
-    return speed > 0.001 || checkFootBlock() || checkInBlock();
+    return speed >= 0.1 || (pl.isClimbing && !pl.isOnGround) || !pl.isOnGround
 };
 events.itemUse.subscribe(data => {
     const pl = data.source;
@@ -64,7 +46,7 @@ events.itemUse.subscribe(data => {
     if (!practiceData.toggle && checkItem(Items.enable)) {
         server.system.run(() => {
             if (checkWrong(pl))
-                return pl.sendMessage('§cYou can\'t enable practice mode while moving');
+                return pl.sendMessage('§cYou can\'t enable practice mode while moving or climbing');
             pl.sendMessage('§aPractice mode enabled');
             pl.addTag('practice');
             const rot = pl.getRotation();
