@@ -1,1 +1,2 @@
 import './practice';
+import './lobby'

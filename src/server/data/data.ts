@@ -22,5 +22,5 @@ server.world.afterEvents.worldInitialize.subscribe(initData => {
     const def = new server.DynamicPropertiesDefinition();
     def.defineString(Mode.practiceData, 255);
     def.defineBoolean(Mode.cordinatorToggle);
-    initData.propertyRegistry.registerEntityTypeDynamicProperties(def, server.MinecraftEntityTypes.player);
+    initData.propertyRegistry.registerEntityTypeDynamicProperties(def, 'minecraft:player');
 });

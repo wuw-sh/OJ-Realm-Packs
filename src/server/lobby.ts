@@ -1,4 +1,4 @@
-import { ItemStack, MinecraftItemTypes, world, ItemLockMode, system, EntityInventoryComponent } from "@minecraft/server";
+import { ItemStack, ItemTypes, world, ItemLockMode, system, EntityInventoryComponent } from "@minecraft/server";
 import { tagUpdate } from "./listeners";
 world.beforeEvents.itemUse.subscribe(data => {
     const it = data.itemStack;
@@ -21,7 +21,7 @@ tagUpdate((player, tag, cause) => {
         }
     }
     else if (cause === 'remove' && tag === 'practice') {
-        const item = new ItemStack(MinecraftItemTypes.netherStar);
+        const item = new ItemStack(ItemTypes.get('minecraft:nether_star'));
         item.nameTag = 'Return To Lobby';
         item.lockMode = ItemLockMode.slot;
         inv.setItem(4, item);

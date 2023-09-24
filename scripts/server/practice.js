@@ -97,9 +97,9 @@ server.system.runInterval(() => {
         const db = new Database(pl);
         if (!db.get(Mode.cordinatorToggle))
             return;
-        const pos = Object.values(pl.location).map(pos => Number(pos.toFixed(5)));
+        const pos = Object.values(pl.location).map(pos => Number(pos.toFixed(2)));
         let rot = pl.getRotation();
-        rot = { x: Number(rot.x.toFixed(5)), y: Number(rot.y.toFixed(5)) };
+        rot = { x: Number(rot.x.toFixed(2)), y: Number(rot.y.toFixed(2)) };
         pl.onScreenDisplay.setActionBar(`X: ${pos[0]} Y: ${pos[1]} Z: ${pos[2]}\nYaw: ${rot.y} Pitch: ${rot.x}`);
     });
 });
