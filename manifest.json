@@ -14,7 +14,7 @@
     "min_engine_version": [
       1,
       20,
-      10
+      30
     ],
     "uuid": "02ddbbbf-27f0-4f61-a998-6123eea8de6c",
     "version": [
@@ -28,11 +28,11 @@
       "type": "script",
       "description": "@minecraft/server | @minecraft/server-ui",
       "language": "javascript",
-      "uuid": "42336741-2d1e-428e-bdf2-59a637f79523",
+      "uuid": "00257053-7013-4163-9e63-ad7b97bff5db",
       "entry": "scripts/server/index.js",
       "version": [
         1,
-        4,
+        6,
         0
       ]
     }
