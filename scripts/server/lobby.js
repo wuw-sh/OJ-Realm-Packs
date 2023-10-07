@@ -1,4 +1,4 @@
-import { ItemStack, ItemTypes, world, ItemLockMode, system } from "@minecraft/server";
+import { ItemStack, ItemTypes, world, ItemLockMode, system, EntityInventoryComponent } from "@minecraft/server";
 import { tagUpdate } from "./listeners";
 world.beforeEvents.itemUse.subscribe(data => {
     const it = data.itemStack;
@@ -11,7 +11,7 @@ world.beforeEvents.itemUse.subscribe(data => {
     });
 });
 tagUpdate((player, tag, cause) => {
-    const inv = player.getComponent('inventory').container;
+    const inv = player.getComponent(EntityInventoryComponent.componentId).container;
     if (cause === 'add' && tag === 'practice') {
         for (let i = 0; i < inv.size; i++) {
             const item = inv.getItem(i);

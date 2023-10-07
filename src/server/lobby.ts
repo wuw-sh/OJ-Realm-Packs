@@ -11,7 +11,7 @@ world.beforeEvents.itemUse.subscribe(data => {
     });
 });
 tagUpdate((player, tag, cause) => {
-    const inv = (<EntityInventoryComponent>player.getComponent('inventory')).container;
+    const inv = (<EntityInventoryComponent>player.getComponent(EntityInventoryComponent.componentId)).container;
     if (cause === 'add' && tag === 'practice') {
         for (let i = 0; i < inv.size; i++) {
             const item = inv.getItem(i);
