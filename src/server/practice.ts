@@ -77,9 +77,6 @@ events.itemUse.subscribe(data => {
         });
     }
     else if (checkItem(Items.coordinator)) {
-        db.get(Mode.coordinatorConfig)
-        db.get(Mode.coordinatorToggle)
-        db.get(Mode.coordinatorNotificationToggle)
         if (pl.isSneaking) {
             if (!db.has(Mode.coordinatorConfig))
                 db.set(Mode.coordinatorConfig, JSON.stringify({ positional: 5, rotational: 5 }));
@@ -116,6 +113,14 @@ events.itemUse.subscribe(data => {
 server.system.runInterval(() => {
     server.world.getAllPlayers().forEach(pl => {
         const db = new Database(pl);
+        if (!db.has(Mode.coordinatorToggle))
+            db.set(Mode.coordinatorToggle, false);
+        if (!db.has(Mode.coordinatorNotificationToggle))
+            db.set(Mode.coordinatorNotificationToggle, true);
+        if (!db.has(Mode.coordinatorConfig))
+            db.set(Mode.coordinatorConfig, JSON.stringify({ positional: 5, rotational: 5 }));
+        if (!db.has(Mode.practiceData))
+            db.set(Mode.practiceData, JSON.stringify({ toggle: false, location: { x: null, y: null, z: null }, rotation: { x: null, y: null } }));
         const handItem = (<server.EntityInventoryComponent>pl.getComponent(server.EntityInventoryComponent.componentId)).container.getItem(pl.selectedSlot);
         if (!db.get(Mode.coordinatorToggle)) {
             if (handItem?.typeId == Items.coordinator.typeId)

@@ -15,13 +15,15 @@ export class Database {
     }
     get(identifier) {
         if (!this.has(identifier))
-            return false;
-        const res = this.player.getDynamicProperty(identifier);
-        return (identifier === Mode.coordinatorToggle || identifier === Mode.coordinatorNotificationToggle) ? Boolean(res) : JSON.parse(String(res));
+            return null;
+        const data = this.player.getDynamicProperty(identifier);
+        return (identifier === Mode.coordinatorToggle || identifier === Mode.coordinatorNotificationToggle) ? Boolean(data) : JSON.parse(String(data));
     }
     has(identifier) {
         try {
-            this.player.getDynamicProperty(identifier);
+            const data = this.player.getDynamicProperty(identifier);
+            if (data === undefined)
+                return false;
             return true;
         }
         catch (e) {
