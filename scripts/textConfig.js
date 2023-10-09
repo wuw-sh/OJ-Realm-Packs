@@ -14,7 +14,7 @@ export const text = {
             body: 'Select a location to teleport to.',
             savesButton: (name, x, y, z) => `${name}\n§8(${x}, ${y}, ${z})`,
             clearAllButton: '§l§8[§cClear all saves§8]',
-            clearAllUi: {
+            clearAllUI: {
                 title: 'Are you sure?',
                 body: 'This action will clear all saves location.',
                 button1: '§l§aNo',

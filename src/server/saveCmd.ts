@@ -67,10 +67,10 @@ server.world.beforeEvents.chatSend.subscribe(data => {
                     if (selection === undefined) return
                     if (selection === Object.keys(saves).length) {
                         new ui.MessageFormData()
-                            .title(uiText.clearAllUi.title)
-                            .body(uiText.clearAllUi.body)
-                            .button1(uiText.clearAllUi.button1)
-                            .button2(uiText.clearAllUi.button2)
+                            .title(uiText.clearAllUI.title)
+                            .body(uiText.clearAllUI.body)
+                            .button1(uiText.clearAllUI.button1)
+                            .button2(uiText.clearAllUI.button2)
                             .show(sender).then(res => {
                                 if (res.selection === 0 || res.canceled) return
                                 db.clear(Mode.saves)
