@@ -131,50 +131,53 @@ events.itemUse.subscribe(data => {
         }
     }
 });
-server.system.runInterval(() => {
-    server.world.getAllPlayers().forEach(pl => {
-        const db = new Database(pl);
-        const actionbarLine = [];
-        const pushAcLine = (line) => actionbarLine.push(line);
-        const updateAc = () => pl.onScreenDisplay.setActionBar(actionbarLine.join('\n'));
-        const handItem = pl.getComponent(server.EntityInventoryComponent.componentId).container.getItem(pl.selectedSlot);
-        db.get(Mode.coordinatorToggle) ? (() => {
-            const pos = (() => {
-                const pos = Object.values(pl.location).map(pos => pos.toFixed(db.get(Mode.coordinatorConfig).positional ?? 5));
-                return {
-                    x: pos[0],
-                    y: pos[1],
-                    z: pos[2]
+(async () => {
+    await new Promise(resolve => server.world.afterEvents.worldInitialize.subscribe(() => resolve(void 0)));
+    server.system.runInterval(() => {
+        server.world.getAllPlayers().forEach(pl => {
+            const db = new Database(pl);
+            const actionbarLine = [];
+            const pushAcLine = (line) => actionbarLine.push(line);
+            const updateAc = () => pl.onScreenDisplay.setActionBar(actionbarLine.join('\n'));
+            const handItem = pl.getComponent(server.EntityInventoryComponent.componentId).container.getItem(pl.selectedSlot);
+            db.get(Mode.coordinatorToggle) ? (() => {
+                const pos = (() => {
+                    const pos = Object.values(pl.location).map(pos => pos.toFixed(db.get(Mode.coordinatorConfig).positional ?? 5));
+                    return {
+                        x: pos[0],
+                        y: pos[1],
+                        z: pos[2]
+                    };
+                })();
+                const rot = {
+                    x: (-pl.getRotation().x).toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: (() => {
+                        const rotY = pl.getRotation().y;
+                        if (rotY < 0)
+                            return 360 + rotY;
+                        return rotY;
+                    })().toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5)
                 };
+                pushAcLine(text.coordinate.actionbar.positional(pos.x, pos.y, pos.z));
+                pushAcLine(text.coordinate.actionbar.rotational(rot.x, rot.y));
+                handItem?.typeId == Items.coordinator.typeId ? (() => {
+                    pushAcLine(text.coordinate.actionbar.interaction.disable);
+                    pushAcLine(text.coordinate.actionbar.interaction.config);
+                })() : void 0;
+                db.get(Mode.practiceData).toggle ? (() => {
+                    pushAcLine(text.practiceMode.actionbar.enable);
+                })() : void 0;
+                updateAc();
+            })() : (() => {
+                handItem?.typeId == Items.coordinator.typeId ? (() => {
+                    pushAcLine(text.coordinate.actionbar.disable);
+                    pushAcLine(text.coordinate.actionbar.interaction.enable);
+                    pushAcLine(text.coordinate.actionbar.interaction.config);
+                })() : void 0;
+                db.get(Mode.practiceData).toggle ? (() => {
+                    pushAcLine(text.practiceMode.actionbar.enable);
+                })() : void 0;
+                updateAc();
             })();
-            const rot = {
-                x: (-pl.getRotation().x).toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: (() => {
-                    const rotY = pl.getRotation().y;
-                    if (rotY < 0)
-                        return 360 + rotY;
-                    return rotY;
-                })().toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5)
-            };
-            pushAcLine(text.coordinate.actionbar.positional(pos.x, pos.y, pos.z));
-            pushAcLine(text.coordinate.actionbar.rotational(rot.x, rot.y));
-            handItem?.typeId == Items.coordinator.typeId ? (() => {
-                pushAcLine(text.coordinate.actionbar.interaction.disable);
-                pushAcLine(text.coordinate.actionbar.interaction.config);
-            })() : void 0;
-            db.get(Mode.practiceData).toggle ? (() => {
-                pushAcLine(text.practiceMode.actionbar.enable);
-            })() : void 0;
-            updateAc();
-        })() : (() => {
-            handItem?.typeId == Items.coordinator.typeId ? (() => {
-                pushAcLine(text.coordinate.actionbar.disable);
-                pushAcLine(text.coordinate.actionbar.interaction.enable);
-                pushAcLine(text.coordinate.actionbar.interaction.config);
-            })() : void 0;
-            db.get(Mode.practiceData).toggle ? (() => {
-                pushAcLine(text.practiceMode.actionbar.enable);
-            })() : void 0;
-            updateAc();
-        })();
+        });
     });
-});
+})();
