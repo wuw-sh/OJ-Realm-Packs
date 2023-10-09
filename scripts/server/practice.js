@@ -29,10 +29,16 @@ const clearPracItem = (pl) => {
     const dis = getInv(inv, Items["practiceDisable"]);
     dis.forEach(it => it ? inv.setItem(it.slot) : void 0);
 };
-const checkWrong = (pl) => {
+const isMoving = (pl) => {
     const v = pl.getVelocity();
     const speed = Math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2);
-    return speed >= 0.1 || (pl.isClimbing && !pl.isOnGround) || !pl.isOnGround;
+    return speed > 0.01;
+};
+const isClimbing = (pl) => {
+    return (pl.isClimbing && !pl.isOnGround);
+};
+const isOnGround = (pl) => {
+    return pl.isOnGround;
 };
 events.itemUse.subscribe(data => {
     const pl = data.source;
@@ -45,7 +51,7 @@ events.itemUse.subscribe(data => {
     const checkItem = (ItemType) => it.typeId == ItemType.typeId;
     if (!practiceData.toggle && checkItem(Items.practiceEnable)) {
         server.system.run(() => {
-            if (checkWrong(pl))
+            if (isMoving(pl) || isClimbing(pl) || !isOnGround(pl))
                 return pl.sendMessage(text.practiceMode.notification.wrong);
             pl.sendMessage(text.practiceMode.notification.enable);
             pl.addTag('practice');
@@ -163,9 +169,15 @@ events.itemUse.subscribe(data => {
                     pushAcLine(text.coordinate.actionbar.interaction.disable);
                     pushAcLine(text.coordinate.actionbar.interaction.config);
                 })() : void 0;
-                db.get(Mode.practiceData).toggle ? (() => {
-                    pushAcLine(text.practiceMode.actionbar.enable);
-                })() : void 0;
+                db.get(Mode.practiceData).toggle ?
+                    pushAcLine(text.practiceMode.actionbar.enable)
+                    : handItem?.typeId === Items.practiceEnable.typeId ?
+                        isClimbing(pl) ?
+                            pushAcLine(`§7Can't practice mode [Climbing]`)
+                            : isMoving(pl) || !isOnGround(pl) ?
+                                pushAcLine(`§7Can't practice mode [Moving]`)
+                                : pushAcLine('§7[Hold] to enable practice mode')
+                        : void 0;
                 updateAc();
             })() : (() => {
                 handItem?.typeId == Items.coordinator.typeId ? (() => {
@@ -173,9 +185,15 @@ events.itemUse.subscribe(data => {
                     pushAcLine(text.coordinate.actionbar.interaction.enable);
                     pushAcLine(text.coordinate.actionbar.interaction.config);
                 })() : void 0;
-                db.get(Mode.practiceData).toggle ? (() => {
-                    pushAcLine(text.practiceMode.actionbar.enable);
-                })() : void 0;
+                db.get(Mode.practiceData).toggle ?
+                    pushAcLine(text.practiceMode.actionbar.enable)
+                    : handItem?.typeId === Items.practiceEnable.typeId ?
+                        isClimbing(pl) ?
+                            pushAcLine(`§7Can't practice mode [Climbing]`)
+                            : isMoving(pl) || !isOnGround(pl) ?
+                                pushAcLine(`§7Can't practice mode [Moving]`)
+                                : pushAcLine('§7[Hold] to enable practice mode')
+                        : void 0;
                 updateAc();
             })();
         });

@@ -1,10 +1,16 @@
 import * as server from '@minecraft/server';
 import * as ui from '@minecraft/server-ui';
 import { Database, Mode, text } from './index';
-const checkWrong = (pl) => {
+const isMoving = (pl) => {
     const v = pl.getVelocity();
     const speed = Math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2);
-    return speed >= 0.1 || (pl.isClimbing && !pl.isOnGround) || !pl.isOnGround;
+    return speed >= 0.01;
+};
+const isClimbing = (pl) => {
+    return (pl.isClimbing && !pl.isOnGround);
+};
+const isOnGround = (pl) => {
+    return pl.isOnGround;
 };
 server.world.beforeEvents.chatSend.subscribe(data => {
     const msg = data.message;
@@ -20,7 +26,7 @@ server.world.beforeEvents.chatSend.subscribe(data => {
     switch (args[0]) {
         case 'save': {
             data.cancel = true;
-            if (checkWrong(sender))
+            if (isMoving(sender) || isClimbing(sender) || !isOnGround(sender))
                 return sender.sendMessage(text.saveCommand.notification.wrong);
             if (db.get(Mode.practiceData).toggle)
                 return sender.sendMessage(text.saveCommand.notification.inPracticeMode);
