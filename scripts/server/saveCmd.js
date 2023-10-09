@@ -52,7 +52,12 @@ server.world.beforeEvents.chatSend.subscribe(data => {
                 const form = new ui.ActionFormData()
                     .title(uiText.title)
                     .body(uiText.body);
-                for (const key in saves) {
+                // for (const key in saves) {
+                //     const values = saves[key]
+                //     form.button(uiText.savesButton(key, Math.floor(values.location.x), Math.floor(values.location.y), Math.floor(values.location.z)))
+                // }
+                //sort by name
+                for (const key of Object.keys(saves).sort()) {
                     const values = saves[key];
                     form.button(uiText.savesButton(key, Math.floor(values.location.x), Math.floor(values.location.y), Math.floor(values.location.z)));
                 }
@@ -82,7 +87,7 @@ server.world.beforeEvents.chatSend.subscribe(data => {
                         });
                     }
                     else {
-                        const name = Object.keys(saves)[selection];
+                        const name = Object.keys(saves).sort()[selection];
                         const values = saves[name];
                         server.system.run(() => {
                             sender.teleport(values.location, { dimension: sender.dimension, rotation: values.rotation });
