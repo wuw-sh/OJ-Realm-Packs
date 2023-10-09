@@ -1,5 +1,5 @@
-import '../textConfig';
 import './listeners';
+import '../textConfig';
 import './practice';
 import './lobby';
 import './saveCmd';

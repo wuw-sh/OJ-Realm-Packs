@@ -27,11 +27,13 @@ server.world.beforeEvents.chatSend.subscribe(data => {
             const rot = sender.getRotation();
             let newName = args[1] || 'Unnamed';
             const saves = db.get(Mode.saves);
-            const originalName = newName;
-            let i = 0;
-            while (saves[newName]) {
-                i++;
-                newName = `${originalName} [${i}]`;
+            if (saves[newName]) {
+                const originalName = newName;
+                let i = 0;
+                while (saves[newName]) {
+                    i++;
+                    newName = `${originalName} [${i}]`;
+                }
             }
             db.set(Mode.saves, JSON.stringify({ ...saves, [newName]: { location: loc, rotation: rot } }));
             sender.sendMessage(text.saveCommand.notification.save(Math.floor(loc.x), Math.floor(loc.y), Math.floor(loc.z), newName));
@@ -50,11 +52,6 @@ server.world.beforeEvents.chatSend.subscribe(data => {
                 const form = new ui.ActionFormData()
                     .title(uiText.title)
                     .body(uiText.body)
-                // for (const key in saves) {
-                //     const values = saves[key]
-                //     form.button(uiText.savesButton(key, Math.floor(values.location.x), Math.floor(values.location.y), Math.floor(values.location.z)))
-                // }
-                //sort by name
                 for (const key of Object.keys(saves).sort()) {
                     const values = saves[key]
                     form.button(uiText.savesButton(key, Math.floor(values.location.x), Math.floor(values.location.y), Math.floor(values.location.z)))

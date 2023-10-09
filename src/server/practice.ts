@@ -131,65 +131,50 @@ events.itemUse.subscribe(data => {
     }
 });
 
-(async () => {
-    await new Promise(resolve => server.world.afterEvents.worldInitialize.subscribe(() => resolve(void 0)));
-    server.system.runInterval(() => {
-        server.world.getAllPlayers().forEach(pl => {
-            const dbInit = new Database(pl);
-            try {
-                if (!dbInit.has(Mode.coordinatorToggle))
-                    dbInit.set(Mode.coordinatorToggle, false);
-                if (!dbInit.has(Mode.coordinatorNotificationToggle))
-                    dbInit.set(Mode.coordinatorNotificationToggle, true);
-                if (!dbInit.has(Mode.coordinatorConfig))
-                    dbInit.set(Mode.coordinatorConfig, JSON.stringify({ positional: 5, rotational: 5 }));
-                if (!dbInit.has(Mode.practiceData))
-                    dbInit.set(Mode.practiceData, JSON.stringify({ toggle: false, location: { x: null, y: null, z: null }, rotation: { x: null, y: null } }));
-            } catch (e) {
-            }
-            const db = new Database(pl);
-            const actionbarLine: string[] = [];
-            const pushAcLine = (line: string) => actionbarLine.push(line);
-            const updateAc = () => pl.onScreenDisplay.setActionBar(actionbarLine.join('\n'));
-            const handItem = (<server.EntityInventoryComponent>pl.getComponent(server.EntityInventoryComponent.componentId)).container.getItem(pl.selectedSlot);
-            db.get(Mode.coordinatorToggle) ? (() => {
-                const pos = (() => {
-                    const pos = Object.values(pl.location).map(pos => pos.toFixed(db.get(Mode.coordinatorConfig).positional ?? 5))
-                    return {
-                        x: pos[0] as string,
-                        y: pos[1] as string,
-                        z: pos[2] as string
-                    }
-                })();
-                const rot = {
-                    x: (-pl.getRotation().x).toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: (() => {
-                        const rotY = pl.getRotation().y;
-                        if (rotY < 0)
-                            return 360 + rotY;
-                        return rotY;
-                    })().toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5)
-                };
-                pushAcLine(text.coordinate.actionbar.positional(pos.x, pos.y, pos.z))
-                pushAcLine(text.coordinate.actionbar.rotational(rot.x, rot.y));
-                handItem?.typeId == Items.coordinator.typeId ? (() => {
-                    pushAcLine(text.coordinate.actionbar.interaction.disable);
-                    pushAcLine(text.coordinate.actionbar.interaction.config);
-                })() : void 0;
-                db.get(Mode.practiceData).toggle ? (() => {
-                    pushAcLine(text.practiceMode.actionbar.enable);
-                })() : void 0;
-                updateAc();
-            })() : (() => {
-                handItem?.typeId == Items.coordinator.typeId ? (() => {
-                    pushAcLine(text.coordinate.actionbar.disable);
-                    pushAcLine(text.coordinate.actionbar.interaction.enable);
-                    pushAcLine(text.coordinate.actionbar.interaction.config);
-                })() : void 0;
-                db.get(Mode.practiceData).toggle ? (() => {
-                    pushAcLine(text.practiceMode.actionbar.enable);
-                })() : void 0;
-                updateAc();
+server.system.runInterval(() => {
+    server.world.getAllPlayers().forEach(pl => {
+        const db = new Database(pl);
+        const actionbarLine: string[] = [];
+        const pushAcLine = (line: string) => actionbarLine.push(line);
+        const updateAc = () => pl.onScreenDisplay.setActionBar(actionbarLine.join('\n'));
+        const handItem = (<server.EntityInventoryComponent>pl.getComponent(server.EntityInventoryComponent.componentId)).container.getItem(pl.selectedSlot);
+        db.get(Mode.coordinatorToggle) ? (() => {
+            const pos = (() => {
+                const pos = Object.values(pl.location).map(pos => pos.toFixed(db.get(Mode.coordinatorConfig).positional ?? 5))
+                return {
+                    x: pos[0] as string,
+                    y: pos[1] as string,
+                    z: pos[2] as string
+                }
             })();
-        });
+            const rot = {
+                x: (-pl.getRotation().x).toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: (() => {
+                    const rotY = pl.getRotation().y;
+                    if (rotY < 0)
+                        return 360 + rotY;
+                    return rotY;
+                })().toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5)
+            };
+            pushAcLine(text.coordinate.actionbar.positional(pos.x, pos.y, pos.z))
+            pushAcLine(text.coordinate.actionbar.rotational(rot.x, rot.y));
+            handItem?.typeId == Items.coordinator.typeId ? (() => {
+                pushAcLine(text.coordinate.actionbar.interaction.disable);
+                pushAcLine(text.coordinate.actionbar.interaction.config);
+            })() : void 0;
+            db.get(Mode.practiceData).toggle ? (() => {
+                pushAcLine(text.practiceMode.actionbar.enable);
+            })() : void 0;
+            updateAc();
+        })() : (() => {
+            handItem?.typeId == Items.coordinator.typeId ? (() => {
+                pushAcLine(text.coordinate.actionbar.disable);
+                pushAcLine(text.coordinate.actionbar.interaction.enable);
+                pushAcLine(text.coordinate.actionbar.interaction.config);
+            })() : void 0;
+            db.get(Mode.practiceData).toggle ? (() => {
+                pushAcLine(text.practiceMode.actionbar.enable);
+            })() : void 0;
+            updateAc();
+        })();
     });
-})();
+});
