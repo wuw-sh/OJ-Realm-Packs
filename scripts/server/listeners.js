@@ -1,21 +1,14 @@
-import { system, world } from "@minecraft/server";
-const oldTag = new Map();
-export function tagUpdate(callback) {
-    system.runInterval(() => {
-        world.getAllPlayers().forEach(pl => {
-            const tag = pl.getTags();
-            const old = oldTag.get(pl);
-            if (old) {
-                const added = tag.filter(t => !old.includes(t));
-                const removed = old.filter(t => !tag.includes(t));
-                if (added.length > 0) {
-                    added.forEach(t => callback(pl, t, 'add'));
-                }
-                if (removed.length > 0) {
-                    removed.forEach(t => callback(pl, t, 'remove'));
-                }
-            }
-            oldTag.set(pl, tag);
-        });
-    });
-}
+import * as server from "@minecraft/server";
+import { Mode } from "./index";
+server.world.afterEvents.worldInitialize.subscribe(initData => {
+    const def = new server.DynamicPropertiesDefinition();
+    def.defineString(Mode.coordinatorConfig, 2 ** 6);
+    def.defineString(Mode.practiceData, 2 ** 8);
+    def.defineString(Mode.saves, 2 ** 16);
+    def.defineBoolean(Mode.coordinatorToggle);
+    def.defineBoolean(Mode.coordinatorNotificationToggle);
+    initData.propertyRegistry.registerEntityTypeDynamicProperties(def, 'minecraft:player');
+});
+server.system.beforeEvents.watchdogTerminate.subscribe(watchDog => {
+    watchDog.cancel = true;
+});

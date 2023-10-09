@@ -16,7 +16,7 @@
       20,
       32
     ],
-    "uuid": "881cc9bc-92b6-4a39-b5e4-3c415a64635b",
+    "uuid": "1613b577-9b84-4edc-af12-e40d1f19e227",
     "version": [
       1,
       0,
@@ -28,7 +28,7 @@
       "type": "script",
       "description": "@minecraft/server | @minecraft/server-ui",
       "language": "javascript",
-      "uuid": "76044244-3727-46c7-99ff-3448bd880b8d",
+      "uuid": "422e17ba-1d67-4ad7-93c7-3070a399bbda",
       "entry": "scripts/server/index.js",
       "version": [
         1,

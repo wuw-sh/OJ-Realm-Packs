@@ -1,10 +1,6 @@
 import * as server from '@minecraft/server';
-export enum Mode {
-    "practiceData" = "practiceData",
-    "coordinatorConfig" = "coordinatorConfig",
-    "coordinatorToggle" = "coordinatorToggle",
-    "coordinatorNotificationToggle" = "coordinatorNotificationToggle"
-}
+import { Mode } from '../types/index';
+
 export class Database {
     player: server.Player;
     constructor(player: server.Player) {
@@ -28,14 +24,6 @@ export class Database {
         }
     }
     clear(identifier: string): void {
-        return this.set(identifier, '');
+        return this.set(identifier, JSON.stringify({}));
     }
 }
-server.world.afterEvents.worldInitialize.subscribe(initData => {
-    const def = new server.DynamicPropertiesDefinition();
-    def.defineString(Mode.coordinatorConfig, 255);
-    def.defineString(Mode.practiceData, 255);
-    def.defineBoolean(Mode.coordinatorToggle);
-    def.defineBoolean(Mode.coordinatorNotificationToggle);
-    initData.propertyRegistry.registerEntityTypeDynamicProperties(def, 'minecraft:player');
-});

@@ -1,29 +1,32 @@
 import * as server from '@minecraft/server';
 import * as ui from '@minecraft/server-ui';
-import { Database, Mode } from './data/data';
+import { Mode, Database, text } from "./index";
 const events = server.world.beforeEvents;
 const Items = {
-    enable: {
-        typeId: 'minecraft:slime_ball'
+    practiceEnable: {
+        typeId: text.practiceMode.item.enable.typeId
     },
-    disable: {
-        typeId: 'minecraft:magma_cream'
+    practiceDisable: {
+        typeId: text.practiceMode.item.disable.typeId
     },
-    returner: {
-        typeId: 'minecraft:prismarine_shard'
+    practiceReturner: {
+        typeId: text.practiceMode.item.returner.typeId
     },
     coordinator: {
-        typeId: 'minecraft:compass'
+        typeId: text.coordinate.item.coordinator.typeId
+    },
+    lobbyReturner: {
+        typeId: text.lobby.item.returner.typeId
     }
 };
 const getInv = (inv, itemType) => [...Array(inv.size).keys()].map(i => inv.getItem(i)).map((it, slot) => !it ? null : { typeId: it.typeId, name: it.nameTag, slot: slot }).filter(it => it !== null && it.typeId == itemType.typeId);
 const clearPracItem = (pl) => {
     const inv = pl.getComponent('inventory').container;
-    const items = getInv(inv, Items["enable"]);
+    const items = getInv(inv, Items["practiceEnable"]);
     items.forEach(it => it ? inv.setItem(it.slot) : void 0);
-    const rtn = getInv(inv, Items["returner"]);
+    const rtn = getInv(inv, Items["practiceReturner"]);
     rtn.forEach(it => it ? inv.setItem(it.slot) : void 0);
-    const dis = getInv(inv, Items["disable"]);
+    const dis = getInv(inv, Items["practiceDisable"]);
     dis.forEach(it => it ? inv.setItem(it.slot) : void 0);
 };
 const checkWrong = (pl) => {
@@ -40,38 +43,54 @@ events.itemUse.subscribe(data => {
     const practiceData = db.get(Mode.practiceData);
     const inv = pl.getComponent('inventory').container;
     const checkItem = (ItemType) => it.typeId == ItemType.typeId;
-    if (!practiceData.toggle && checkItem(Items.enable)) {
+    if (!practiceData.toggle && checkItem(Items.practiceEnable)) {
         server.system.run(() => {
             if (checkWrong(pl))
-                return pl.sendMessage('Practice mode§7: §eYou can\'t enable practice mode while moving or climbing');
-            pl.sendMessage('Practice mode§7: §aenabled');
+                return pl.sendMessage(text.practiceMode.notification.wrong);
+            pl.sendMessage(text.practiceMode.notification.enable);
             pl.addTag('practice');
             const rot = pl.getRotation();
-            const pracData = { toggle: true, location: pl.location, rotation: { x: rot.x, y: rot.y } };
+            const pracData = { toggle: true, location: pl.location, rotation: rot };
             db.set(Mode.practiceData, JSON.stringify(pracData));
             clearPracItem(pl);
-            const disable = new server.ItemStack(server.ItemTypes.get(Items.disable.typeId));
+            const disable = new server.ItemStack(server.ItemTypes.get(Items.practiceDisable.typeId));
+            disable.nameTag = text.practiceMode.item.disable.nameTag;
             inv.setItem(pl.selectedSlot, disable);
+            const returner = new server.ItemStack(server.ItemTypes.get(Items.practiceReturner.typeId));
+            disable.nameTag = text.practiceMode.item.disable.nameTag;
+            returner.nameTag = text.practiceMode.item.returner.nameTag;
+            inv.setItem(pl.selectedSlot, disable);
+            inv.setItem(4, returner);
+            for (let i = 0; i < inv.size; i++) {
+                const item = inv.getItem(i);
+                if (!item || item.typeId !== text.lobby.item.returner.typeId)
+                    continue;
+                inv.setItem(i);
+            }
         });
     }
-    else if (practiceData.toggle && checkItem(Items.disable)) {
+    else if (practiceData.toggle && checkItem(Items.practiceDisable)) {
         server.system.run(() => {
-            pl.sendMessage('Practice mode§7: §cdisabled');
+            pl.sendMessage(text.practiceMode.notification.disable);
             pl.removeTag('practice');
             const cp = practiceData;
             if (!cp)
-                return pl.sendMessage('§cCheckpoint not found');
+                return pl.sendMessage(text.practiceMode.notification.checkpointNotFound);
             pl.teleport(cp.location, { dimension: pl.dimension, rotation: cp.rotation });
             db.set(Mode.practiceData, JSON.stringify({ toggle: false, location: null, rotation: null }));
             clearPracItem(pl);
-            const enable = new server.ItemStack(server.ItemTypes.get(Items.enable.typeId));
+            const enable = new server.ItemStack(server.ItemTypes.get(Items.practiceEnable.typeId));
+            enable.nameTag = text.practiceMode.item.enable.nameTag;
             inv.setItem(pl.selectedSlot, enable);
+            const lobbyReturner = new server.ItemStack(server.ItemTypes.get(text.lobby.item.returner.typeId));
+            lobbyReturner.nameTag = text.lobby.item.returner.nameTag;
+            inv.setItem(4, lobbyReturner);
         });
     }
-    else if (practiceData.toggle && checkItem(Items.returner)) {
+    else if (practiceData.toggle && checkItem(Items.practiceReturner)) {
         const cp = practiceData;
         if (!cp)
-            return pl.sendMessage('§cCheckpoint not found');
+            return pl.sendMessage(text.practiceMode.notification.checkpointNotFound);
         server.system.run(() => {
             pl.teleport(cp.location, { dimension: pl.dimension, rotation: cp.rotation });
         });
@@ -83,61 +102,95 @@ events.itemUse.subscribe(data => {
             if (!db.has(Mode.coordinatorNotificationToggle))
                 db.set(Mode.coordinatorNotificationToggle, true);
             server.system.run(() => {
+                const uiText = text.coordinate.ui;
                 new ui.ModalFormData()
-                    .title('Coordinate config')
-                    .slider('\n§lDecimal Digits§r\npositional(x/y/z)\n§7- default: 5\n- current', 0, 14, 1, db.get(Mode.coordinatorConfig).positional ?? 5)
-                    .slider('rotational(y/p)\n§7- default: 5\n- current', 0, 14, 1, db.get(Mode.coordinatorConfig).rotational ?? 5)
-                    .toggle(`§lNotification§r\nstatus§7: ${db.get(Mode.coordinatorNotificationToggle) ? '§aon' : '§coff'}`, db.get(Mode.coordinatorNotificationToggle) ?? true)
-                    .show(pl).then(data => {
-                    const config = data.formValues;
+                    .title(uiText.title)
+                    .slider(uiText.decimalDigits.label + '\n§r' + uiText.decimalDigits.slider.positional.join('\n'), 0, 14, 1, db.get(Mode.coordinatorConfig).positional ?? 5)
+                    .slider(uiText.decimalDigits.slider.rotational.join('\n'), 0, 14, 1, db.get(Mode.coordinatorConfig).rotational ?? 5)
+                    .toggle(uiText.notification.label + '\n§r' + uiText.notification.toggle.label + (db.get(Mode.coordinatorNotificationToggle) ? uiText.notification.toggle.on : uiText.notification.toggle.off), db.get(Mode.coordinatorNotificationToggle) ?? true)
+                    .show(pl).then(res => {
+                    const config = res.formValues;
                     if (!config)
                         return;
-                    db.set(Mode.coordinatorConfig, JSON.stringify({ positional: data.formValues[0], rotational: data.formValues[1] }));
-                    db.set(Mode.coordinatorNotificationToggle, data.formValues[2]);
+                    db.set(Mode.coordinatorConfig, JSON.stringify({ positional: res.formValues[0], rotational: res.formValues[1] }));
+                    db.set(Mode.coordinatorNotificationToggle, res.formValues[2]);
                     if (db.get(Mode.coordinatorNotificationToggle))
-                        pl.sendMessage('Coordinate§7: §bconfig updated');
+                        pl.sendMessage(text.coordinate.notification.update);
                 });
             });
         }
         else if (db.get(Mode.coordinatorToggle)) {
             db.set(Mode.coordinatorToggle, false);
             if (db.get(Mode.coordinatorNotificationToggle))
-                pl.sendMessage('Coordinate§7: §cdisabled');
+                pl.sendMessage(text.coordinate.notification.disable);
         }
         else {
             db.set(Mode.coordinatorToggle, true);
             if (db.get(Mode.coordinatorNotificationToggle))
-                pl.sendMessage('Coordinate§7: §aenabled');
+                pl.sendMessage(text.coordinate.notification.enable);
         }
     }
 });
-server.system.runInterval(() => {
-    server.world.getAllPlayers().forEach(pl => {
-        const db = new Database(pl);
-        if (!db.has(Mode.coordinatorToggle))
-            db.set(Mode.coordinatorToggle, false);
-        if (!db.has(Mode.coordinatorNotificationToggle))
-            db.set(Mode.coordinatorNotificationToggle, true);
-        if (!db.has(Mode.coordinatorConfig))
-            db.set(Mode.coordinatorConfig, JSON.stringify({ positional: 5, rotational: 5 }));
-        if (!db.has(Mode.practiceData))
-            db.set(Mode.practiceData, JSON.stringify({ toggle: false, location: { x: null, y: null, z: null }, rotation: { x: null, y: null } }));
-        const handItem = pl.getComponent(server.EntityInventoryComponent.componentId).container.getItem(pl.selectedSlot);
-        if (!db.get(Mode.coordinatorToggle)) {
-            if (handItem?.typeId == Items.coordinator.typeId)
-                pl.onScreenDisplay.setActionBar('§cCoordinate disabled\n§7[Hold] to enable\n§7[Hold + Sneak] to config');
-            return;
-        }
-        const pos = Object.values(pl.location).map(pos => pos.toFixed(db.get(Mode.coordinatorConfig).positional ?? 5));
-        const rot = { x: pl.getRotation().x.toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: pl.getRotation().y.toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5) };
-        if (handItem?.typeId == Items.coordinator.typeId) {
-            pl.onScreenDisplay.setActionBar(`Pos: ${pos[0]} / ${pos[1]} / ${pos[2]}\nRot(y/p): ${rot.y} / ${rot.x}\n§7[Hold + Sneak] to config`);
-        }
-        else {
-            pl.onScreenDisplay.setActionBar(`Pos: ${pos[0]} / ${pos[1]} / ${pos[2]}\nRot(y/p): ${rot.y} / ${rot.x}`);
-        }
+(async () => {
+    await new Promise(resolve => server.world.afterEvents.worldInitialize.subscribe(() => resolve(void 0)));
+    server.system.runInterval(() => {
+        server.world.getAllPlayers().forEach(pl => {
+            const dbInit = new Database(pl);
+            try {
+                if (!dbInit.has(Mode.coordinatorToggle))
+                    dbInit.set(Mode.coordinatorToggle, false);
+                if (!dbInit.has(Mode.coordinatorNotificationToggle))
+                    dbInit.set(Mode.coordinatorNotificationToggle, true);
+                if (!dbInit.has(Mode.coordinatorConfig))
+                    dbInit.set(Mode.coordinatorConfig, JSON.stringify({ positional: 5, rotational: 5 }));
+                if (!dbInit.has(Mode.practiceData))
+                    dbInit.set(Mode.practiceData, JSON.stringify({ toggle: false, location: { x: null, y: null, z: null }, rotation: { x: null, y: null } }));
+            }
+            catch (e) {
+            }
+            const db = new Database(pl);
+            const actionbarLine = [];
+            const pushAcLine = (line) => actionbarLine.push(line);
+            const updateAc = () => pl.onScreenDisplay.setActionBar(actionbarLine.join('\n'));
+            const handItem = pl.getComponent(server.EntityInventoryComponent.componentId).container.getItem(pl.selectedSlot);
+            db.get(Mode.coordinatorToggle) ? (() => {
+                const pos = (() => {
+                    const pos = Object.values(pl.location).map(pos => pos.toFixed(db.get(Mode.coordinatorConfig).positional ?? 5));
+                    return {
+                        x: pos[0],
+                        y: pos[1],
+                        z: pos[2]
+                    };
+                })();
+                const rot = {
+                    x: (-pl.getRotation().x).toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: (() => {
+                        const rotY = pl.getRotation().y;
+                        if (rotY < 0)
+                            return 360 + rotY;
+                        return rotY;
+                    })().toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5)
+                };
+                pushAcLine(text.coordinate.actionbar.positional(pos.x, pos.y, pos.z));
+                pushAcLine(text.coordinate.actionbar.rotational(rot.x, rot.y));
+                handItem?.typeId == Items.coordinator.typeId ? (() => {
+                    pushAcLine(text.coordinate.actionbar.interaction.disable);
+                    pushAcLine(text.coordinate.actionbar.interaction.config);
+                })() : void 0;
+                db.get(Mode.practiceData).toggle ? (() => {
+                    pushAcLine(text.practiceMode.actionbar.enable);
+                })() : void 0;
+                updateAc();
+            })() : (() => {
+                handItem?.typeId == Items.coordinator.typeId ? (() => {
+                    pushAcLine(text.coordinate.actionbar.disable);
+                    pushAcLine(text.coordinate.actionbar.interaction.enable);
+                    pushAcLine(text.coordinate.actionbar.interaction.config);
+                })() : void 0;
+                db.get(Mode.practiceData).toggle ? (() => {
+                    pushAcLine(text.practiceMode.actionbar.enable);
+                })() : void 0;
+                updateAc();
+            })();
+        });
     });
-});
-server.system.beforeEvents.watchdogTerminate.subscribe(watchDog => {
-    watchDog.cancel = true;
-});
+})();
