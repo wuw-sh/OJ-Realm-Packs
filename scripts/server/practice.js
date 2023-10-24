@@ -156,12 +156,7 @@ events.itemUse.subscribe(data => {
                     };
                 })();
                 const rot = {
-                    x: (-pl.getRotation().x).toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: (() => {
-                        const rotY = pl.getRotation().y;
-                        if (rotY < 0)
-                            return 360 + rotY;
-                        return rotY;
-                    })().toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5)
+                    x: pl.getRotation().x.toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: pl.getRotation().y.toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5)
                 };
                 pushAcLine(text.coordinate.actionbar.positional(pos.x, pos.y, pos.z));
                 pushAcLine(text.coordinate.actionbar.rotational(rot.x, rot.y));
