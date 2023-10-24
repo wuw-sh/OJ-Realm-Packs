@@ -14,9 +14,9 @@
     "min_engine_version": [
       1,
       20,
-      32
+      40
     ],
-    "uuid": "f7c3fbdf-c885-4216-b56e-8eeb817f98c8",
+    "uuid": "bcdcadcd-cc21-468b-85a0-4000caf1acdc",
     "version": [
       1,
       0,
@@ -28,11 +28,11 @@
       "type": "script",
       "description": "@minecraft/server | @minecraft/server-ui",
       "language": "javascript",
-      "uuid": "41341b67-01d6-473e-9e1d-89e9f5931772",
+      "uuid": "7f566e5b-cbb1-40d1-b267-a73c14f3834e",
       "entry": "scripts/server/index.js",
       "version": [
         1,
-        6,
+        7,
         0
       ]
     }
@@ -40,7 +40,7 @@
   "dependencies": [
     {
       "module_name": "@minecraft/server",
-      "version": "1.6.0-beta"
+      "version": "1.7.0-beta"
     },
     {
       "module_name": "@minecraft/server-ui",

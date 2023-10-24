@@ -59,10 +59,10 @@ events.itemUse.subscribe(data => {
             const pracData = { toggle: true, location: pl.location, rotation: rot };
             db.set(Mode.practiceData, JSON.stringify(pracData));
             clearPracItem(pl);
-            const disable = new server.ItemStack(server.ItemTypes.get(Items.practiceDisable.typeId));
+            const disable = new server.ItemStack(Items.practiceDisable.typeId);
             disable.nameTag = text.practiceMode.item.disable.nameTag;
             inv.setItem(pl.selectedSlot, disable);
-            const returner = new server.ItemStack(server.ItemTypes.get(Items.practiceReturner.typeId));
+            const returner = new server.ItemStack(Items.practiceReturner.typeId);
             disable.nameTag = text.practiceMode.item.disable.nameTag;
             returner.nameTag = text.practiceMode.item.returner.nameTag;
             inv.setItem(pl.selectedSlot, disable);
@@ -85,10 +85,10 @@ events.itemUse.subscribe(data => {
             pl.teleport(cp.location, { dimension: pl.dimension, rotation: cp.rotation });
             db.set(Mode.practiceData, JSON.stringify({ toggle: false, location: null, rotation: null }));
             clearPracItem(pl);
-            const enable = new server.ItemStack(server.ItemTypes.get(Items.practiceEnable.typeId));
+            const enable = new server.ItemStack(Items.practiceEnable.typeId);
             enable.nameTag = text.practiceMode.item.enable.nameTag;
             inv.setItem(pl.selectedSlot, enable);
-            const lobbyReturner = new server.ItemStack(server.ItemTypes.get(text.lobby.item.returner.typeId));
+            const lobbyReturner = new server.ItemStack(text.lobby.item.returner.typeId);
             lobbyReturner.nameTag = text.lobby.item.returner.nameTag;
             inv.setItem(4, lobbyReturner);
         });

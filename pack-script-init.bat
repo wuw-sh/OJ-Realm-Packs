@@ -1,6 +1,6 @@
 @echo off
 
-if not exist node_modules/@minecraft/server call npm i @minecraft/server@1.6.0-beta.1.20.30-stable
+if not exist node_modules/@minecraft/server call npm i @minecraft/server@1.7.0-beta.1.20.40-preview.24
 if not exist node_modules/@minecraft/server-ui call npm i @minecraft/server-ui@1.2.0-beta.1.20.10-stable
 
 (
