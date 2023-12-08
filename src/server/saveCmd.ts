@@ -89,6 +89,7 @@ server.world.beforeEvents.chatSend.subscribe(data => {
                         server.system.run(() => {
                             sender.teleport(values.location, { dimension: sender.dimension, rotation: values.rotation })
                         })
+                        sender.applyDamage
                         sender.sendMessage(text.saveCommand.notification.teleport(Math.floor(values.location.x), Math.floor(values.location.y), Math.floor(values.location.z), name))
                         delete saves[name]
                         db.set(Mode.saves, JSON.stringify(saves))
