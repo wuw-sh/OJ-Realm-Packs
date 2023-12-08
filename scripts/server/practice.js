@@ -1,33 +1,39 @@
-import * as server from '@minecraft/server';
-import * as ui from '@minecraft/server-ui';
+import * as server from "@minecraft/server";
+import * as ui from "@minecraft/server-ui";
 import { Mode, Database, text } from "./index";
 const events = server.world.beforeEvents;
 const Items = {
     practiceEnable: {
-        typeId: text.practiceMode.item.enable.typeId
+        typeId: text.practiceMode.item.enable.typeId,
     },
     practiceDisable: {
-        typeId: text.practiceMode.item.disable.typeId
+        typeId: text.practiceMode.item.disable.typeId,
     },
     practiceReturner: {
-        typeId: text.practiceMode.item.returner.typeId
+        typeId: text.practiceMode.item.returner.typeId,
     },
     coordinator: {
-        typeId: text.coordinate.item.coordinator.typeId
+        typeId: text.coordinate.item.coordinator.typeId,
     },
     lobbyReturner: {
-        typeId: text.lobby.item.returner.typeId
-    }
+        typeId: text.lobby.item.returner.typeId,
+    },
 };
-const getInv = (inv, itemType) => [...Array(inv.size).keys()].map(i => inv.getItem(i)).map((it, slot) => !it ? null : { typeId: it.typeId, name: it.nameTag, slot: slot }).filter(it => it !== null && it.typeId == itemType.typeId);
+const getInv = (inv, itemType) => [...Array(inv.size).keys()]
+    .map((i) => inv.getItem(i))
+    .map((it, slot) => !it ? null : { typeId: it.typeId, name: it.nameTag, slot: slot })
+    .filter((it) => it !== null && it.typeId == itemType.typeId);
 const clearPracItem = (pl) => {
-    const inv = pl.getComponent('inventory').container;
+    const inv = pl.getComponent("inventory")
+        .container;
+    if (!inv)
+        return;
     const items = getInv(inv, Items["practiceEnable"]);
-    items.forEach(it => it ? inv.setItem(it.slot) : void 0);
+    items.forEach((it) => (it ? inv.setItem(it.slot) : void 0));
     const rtn = getInv(inv, Items["practiceReturner"]);
-    rtn.forEach(it => it ? inv.setItem(it.slot) : void 0);
+    rtn.forEach((it) => (it ? inv.setItem(it.slot) : void 0));
     const dis = getInv(inv, Items["practiceDisable"]);
-    dis.forEach(it => it ? inv.setItem(it.slot) : void 0);
+    dis.forEach((it) => (it ? inv.setItem(it.slot) : void 0));
 };
 const isMoving = (pl) => {
     const v = pl.getVelocity();
@@ -35,26 +41,29 @@ const isMoving = (pl) => {
     return speed > 0.01;
 };
 const isClimbing = (pl) => {
-    return (pl.isClimbing && !pl.isOnGround);
+    return pl.isClimbing && !pl.isOnGround;
 };
 const isOnGround = (pl) => {
     return pl.isOnGround;
 };
-events.itemUse.subscribe(data => {
+events.itemUse.subscribe((data) => {
     const pl = data.source;
     if (!(pl instanceof server.Player))
         return;
     const it = data.itemStack;
     const db = new Database(pl);
     const practiceData = db.get(Mode.practiceData);
-    const inv = pl.getComponent('inventory').container;
+    const inv = pl.getComponent("inventory")
+        .container;
+    if (!inv)
+        return;
     const checkItem = (ItemType) => it.typeId == ItemType.typeId;
     if (!practiceData.toggle && checkItem(Items.practiceEnable)) {
         server.system.run(() => {
             if (isMoving(pl) || isClimbing(pl) || !isOnGround(pl))
                 return pl.sendMessage(text.practiceMode.notification.wrong);
             pl.sendMessage(text.practiceMode.notification.enable);
-            pl.addTag('practice');
+            pl.addTag("practice");
             const rot = pl.getRotation();
             const pracData = { toggle: true, location: pl.location, rotation: rot };
             db.set(Mode.practiceData, JSON.stringify(pracData));
@@ -78,11 +87,14 @@ events.itemUse.subscribe(data => {
     else if (practiceData.toggle && checkItem(Items.practiceDisable)) {
         server.system.run(() => {
             pl.sendMessage(text.practiceMode.notification.disable);
-            pl.removeTag('practice');
+            pl.removeTag("practice");
             const cp = practiceData;
             if (!cp)
                 return pl.sendMessage(text.practiceMode.notification.checkpointNotFound);
-            pl.teleport(cp.location, { dimension: pl.dimension, rotation: cp.rotation });
+            pl.teleport(cp.location, {
+                dimension: pl.dimension,
+                rotation: cp.rotation,
+            });
             db.set(Mode.practiceData, JSON.stringify({ toggle: false, location: null, rotation: null }));
             clearPracItem(pl);
             const enable = new server.ItemStack(Items.practiceEnable.typeId);
@@ -98,7 +110,10 @@ events.itemUse.subscribe(data => {
         if (!cp)
             return pl.sendMessage(text.practiceMode.notification.checkpointNotFound);
         server.system.run(() => {
-            pl.teleport(cp.location, { dimension: pl.dimension, rotation: cp.rotation });
+            pl.teleport(cp.location, {
+                dimension: pl.dimension,
+                rotation: cp.rotation,
+            });
         });
     }
     else if (checkItem(Items.coordinator)) {
@@ -111,14 +126,25 @@ events.itemUse.subscribe(data => {
                 const uiText = text.coordinate.ui;
                 new ui.ModalFormData()
                     .title(uiText.title)
-                    .slider(uiText.decimalDigits.label + '\n§r' + uiText.decimalDigits.slider.positional.join('\n'), 0, 14, 1, db.get(Mode.coordinatorConfig).positional ?? 5)
-                    .slider(uiText.decimalDigits.slider.rotational.join('\n'), 0, 14, 1, db.get(Mode.coordinatorConfig).rotational ?? 5)
-                    .toggle(uiText.notification.label + '\n§r' + uiText.notification.toggle.label + (db.get(Mode.coordinatorNotificationToggle) ? uiText.notification.toggle.on : uiText.notification.toggle.off), db.get(Mode.coordinatorNotificationToggle) ?? true)
-                    .show(pl).then(res => {
+                    .slider(uiText.decimalDigits.label +
+                    "\n§r" +
+                    uiText.decimalDigits.slider.positional.join("\n"), 0, 14, 1, db.get(Mode.coordinatorConfig).positional ?? 5)
+                    .slider(uiText.decimalDigits.slider.rotational.join("\n"), 0, 14, 1, db.get(Mode.coordinatorConfig).rotational ?? 5)
+                    .toggle(uiText.notification.label +
+                    "\n§r" +
+                    uiText.notification.toggle.label +
+                    (db.get(Mode.coordinatorNotificationToggle)
+                        ? uiText.notification.toggle.on
+                        : uiText.notification.toggle.off), db.get(Mode.coordinatorNotificationToggle) ?? true)
+                    .show(pl)
+                    .then((res) => {
                     const config = res.formValues;
                     if (!config)
                         return;
-                    db.set(Mode.coordinatorConfig, JSON.stringify({ positional: res.formValues[0], rotational: res.formValues[1] }));
+                    db.set(Mode.coordinatorConfig, JSON.stringify({
+                        positional: res.formValues[0],
+                        rotational: res.formValues[1],
+                    }));
                     db.set(Mode.coordinatorNotificationToggle, res.formValues[2]);
                     if (db.get(Mode.coordinatorNotificationToggle))
                         pl.sendMessage(text.coordinate.notification.update);
@@ -138,59 +164,73 @@ events.itemUse.subscribe(data => {
     }
 });
 (async () => {
-    await new Promise(resolve => server.world.afterEvents.worldInitialize.subscribe(() => resolve(void 0)));
+    await new Promise((resolve) => server.world.afterEvents.worldInitialize.subscribe(() => resolve(void 0)));
     server.system.runInterval(() => {
-        server.world.getAllPlayers().forEach(pl => {
+        server.world.getAllPlayers().forEach((pl) => {
             const db = new Database(pl);
             const actionbarLine = [];
             const pushAcLine = (line) => actionbarLine.push(line);
-            const updateAc = () => pl.onScreenDisplay.setActionBar(actionbarLine.join('\n'));
-            const handItem = pl.getComponent(server.EntityInventoryComponent.componentId).container.getItem(pl.selectedSlot);
-            db.get(Mode.coordinatorToggle) ? (() => {
-                const pos = (() => {
-                    const pos = Object.values(pl.location).map(pos => pos.toFixed(db.get(Mode.coordinatorConfig).positional ?? 5));
-                    return {
-                        x: pos[0],
-                        y: pos[1],
-                        z: pos[2]
+            const updateAc = () => pl.onScreenDisplay.setActionBar(actionbarLine.join("\n"));
+            const inv = (pl.getComponent("inventory")).container;
+            if (!inv)
+                return;
+            const handItem = inv.getItem(pl.selectedSlot);
+            db.get(Mode.coordinatorToggle)
+                ? (() => {
+                    const pos = (() => {
+                        const pos = Object.values(pl.location).map((pos) => pos.toFixed(db.get(Mode.coordinatorConfig).positional ?? 5));
+                        return {
+                            x: pos[0],
+                            y: pos[1],
+                            z: pos[2],
+                        };
+                    })();
+                    const rot = {
+                        x: pl
+                            .getRotation()
+                            .x.toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5),
+                        y: pl
+                            .getRotation()
+                            .y.toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5),
                     };
+                    pushAcLine(text.coordinate.actionbar.positional(pos.x, pos.y, pos.z));
+                    pushAcLine(text.coordinate.actionbar.rotational(rot.x, rot.y));
+                    handItem?.typeId == Items.coordinator.typeId
+                        ? (() => {
+                            pushAcLine(text.coordinate.actionbar.interaction.disable);
+                            pushAcLine(text.coordinate.actionbar.interaction.config);
+                        })()
+                        : void 0;
+                    db.get(Mode.practiceData).toggle
+                        ? pushAcLine(text.practiceMode.actionbar.enable)
+                        : handItem?.typeId === Items.practiceEnable.typeId
+                            ? isClimbing(pl)
+                                ? pushAcLine(`§7Can't practice mode [Climbing]`)
+                                : isMoving(pl) || !isOnGround(pl)
+                                    ? pushAcLine(`§7Can't practice mode [Moving]`)
+                                    : pushAcLine("§7[Hold] to enable practice mode")
+                            : void 0;
+                    updateAc();
+                })()
+                : (() => {
+                    handItem?.typeId == Items.coordinator.typeId
+                        ? (() => {
+                            pushAcLine(text.coordinate.actionbar.disable);
+                            pushAcLine(text.coordinate.actionbar.interaction.enable);
+                            pushAcLine(text.coordinate.actionbar.interaction.config);
+                        })()
+                        : void 0;
+                    db.get(Mode.practiceData).toggle
+                        ? pushAcLine(text.practiceMode.actionbar.enable)
+                        : handItem?.typeId === Items.practiceEnable.typeId
+                            ? isClimbing(pl)
+                                ? pushAcLine(`§7Can't practice mode [Climbing]`)
+                                : isMoving(pl) || !isOnGround(pl)
+                                    ? pushAcLine(`§7Can't practice mode [Moving]`)
+                                    : pushAcLine("§7[Hold] to enable practice mode")
+                            : void 0;
+                    updateAc();
                 })();
-                const rot = {
-                    x: pl.getRotation().x.toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5), y: pl.getRotation().y.toFixed(db.get(Mode.coordinatorConfig).rotational ?? 5)
-                };
-                pushAcLine(text.coordinate.actionbar.positional(pos.x, pos.y, pos.z));
-                pushAcLine(text.coordinate.actionbar.rotational(rot.x, rot.y));
-                handItem?.typeId == Items.coordinator.typeId ? (() => {
-                    pushAcLine(text.coordinate.actionbar.interaction.disable);
-                    pushAcLine(text.coordinate.actionbar.interaction.config);
-                })() : void 0;
-                db.get(Mode.practiceData).toggle ?
-                    pushAcLine(text.practiceMode.actionbar.enable)
-                    : handItem?.typeId === Items.practiceEnable.typeId ?
-                        isClimbing(pl) ?
-                            pushAcLine(`§7Can't practice mode [Climbing]`)
-                            : isMoving(pl) || !isOnGround(pl) ?
-                                pushAcLine(`§7Can't practice mode [Moving]`)
-                                : pushAcLine('§7[Hold] to enable practice mode')
-                        : void 0;
-                updateAc();
-            })() : (() => {
-                handItem?.typeId == Items.coordinator.typeId ? (() => {
-                    pushAcLine(text.coordinate.actionbar.disable);
-                    pushAcLine(text.coordinate.actionbar.interaction.enable);
-                    pushAcLine(text.coordinate.actionbar.interaction.config);
-                })() : void 0;
-                db.get(Mode.practiceData).toggle ?
-                    pushAcLine(text.practiceMode.actionbar.enable)
-                    : handItem?.typeId === Items.practiceEnable.typeId ?
-                        isClimbing(pl) ?
-                            pushAcLine(`§7Can't practice mode [Climbing]`)
-                            : isMoving(pl) || !isOnGround(pl) ?
-                                pushAcLine(`§7Can't practice mode [Moving]`)
-                                : pushAcLine('§7[Hold] to enable practice mode')
-                        : void 0;
-                updateAc();
-            })();
         });
     });
 })();
