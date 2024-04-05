@@ -14,9 +14,9 @@
     "min_engine_version": [
       1,
       20,
-      40
+      70
     ],
-    "uuid": "f79838ae-c498-4300-a2ce-0cc3e4e3a40d",
+    "uuid": "0278e285-9442-4949-91d1-3cb2ea3c981b",
     "version": [
       1,
       0,
@@ -32,7 +32,7 @@
       "entry": "scripts/server/index.js",
       "version": [
         1,
-        8,
+        10,
         0
       ]
     }
@@ -40,7 +40,7 @@
   "dependencies": [
     {
       "module_name": "@minecraft/server",
-      "version": "1.8.0-beta"
+      "version": "1.10.0-beta"
     },
     {
       "module_name": "@minecraft/server-ui",

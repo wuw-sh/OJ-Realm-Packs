@@ -1,6 +1,6 @@
 @echo off
 
-if not exist node_modules/@minecraft/server call npm i @minecraft/server@1.7.0-beta.1.20.40-preview.24
+if not exist node_modules/@minecraft/server call npm i @minecraft/server@1.10.0-beta.1.20.70-stable
 if not exist node_modules/@minecraft/server-ui call npm i @minecraft/server-ui@1.2.0-beta.1.20.10-stable
 
 (
@@ -20,11 +20,11 @@ if not exist node_modules/@minecraft/server-ui call npm i @minecraft/server-ui@1
     echo   "include": [ "src" ]
     echo }
 ) > tsconfig.json
-
+w
 (
     echo @echo off
     echo call tsc -w
-) > TS-compiler.bat
+) > compiler.bat
 
 (
     echo node_modules/
@@ -38,3 +38,7 @@ if not exist node_modules/@minecraft/server-ui call npm i @minecraft/server-ui@1
 call mkdir src
 cd src
 call mkdir server
+cd server
+(
+    echo // script here
+) > index.ts
