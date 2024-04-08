@@ -20,7 +20,7 @@ if not exist node_modules/@minecraft/server-ui call npm i @minecraft/server-ui@1
     echo   "include": [ "src" ]
     echo }
 ) > tsconfig.json
-w
+
 (
     echo @echo off
     echo call tsc -w
